@@ -35,6 +35,9 @@ class StudentEngine(Engine):
         
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
+    
+    def alphabeta(self, board, color, depth, alpha, beta):
+        pass
             
     def eval(self, board, color):
         # Count the # of pieces of each color on the board
@@ -48,16 +51,7 @@ class StudentEngine(Engine):
     def _get_cost(self, board, color, move):
         """ Return the difference in number of pieces after the given move 
         is executed. """
-        
-        # Create a deepcopy of the board to preserve the state of the actual board
-        newboard = deepcopy(board)
-        newboard.execute_move(move, color)
-
-        # Count the # of pieces of each color on the board
-        num_pieces_op = len(newboard.get_squares(color*-1))
-        num_pieces_me = len(newboard.get_squares(color))
-
         # Return the difference in number of pieces
-        return num_pieces_me - num_pieces_op
+        return 0
         
 engine = StudentEngine
