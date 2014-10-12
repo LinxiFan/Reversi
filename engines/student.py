@@ -39,7 +39,7 @@ class StudentEngine(Engine):
         if depth == 0:
             return (self.eval(board, color), None)
         movelist = board.get_legal_moves(color)
-        best = - float("inf")
+        best = mybest
         bestmv = None if len(movelist)==0 else movelist[0]
         for mv in movelist:
             newboard = deepcopy(board)
