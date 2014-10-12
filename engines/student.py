@@ -15,7 +15,7 @@ class StudentEngine(Engine):
         if self.alpha_beta:
             return self.alphabeta(board, color, 5, -float("inf"), float("inf"))[1]
         else:
-            return self.minimax(board, color, 5)[1]
+            return self.minimax(board, color, 4)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
@@ -35,23 +35,23 @@ class StudentEngine(Engine):
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
     
-    def alphabeta(self, board, color, depth, mybest, opbest):
+    def alphabeta(self, board, color, depth, alpha, beta):
         if depth == 0:
             return (self.eval(board, color), None)
         movelist = board.get_legal_moves(color)
-        best = mybest
+        alpha = - float("inf")
         bestmv = None if len(movelist)==0 else movelist[0]
         for mv in movelist:
             newboard = deepcopy(board)
             newboard.execute_move(mv, color)
-            res = self.alphabeta(newboard, color * -1, depth - 1, -opbest, -best)
+            res = self.alphabeta(newboard, color * -1, depth - 1, -beta, -alpha)
             score = - res[0]
-            if score > best:
-                best = score
+            if score > beta:
+                return (beta, bestmv)
+            if score > alpha:
+                alpha = score
                 bestmv = mv
-            if best > opbest:
-                return (best, bestmv)
-        return (best, bestmv)
+        return (alpha, bestmv)
             
     def eval(self, board, color):
         # Count the # of pieces of each color on the board
