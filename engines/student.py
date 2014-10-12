@@ -44,7 +44,7 @@ class StudentEngine(Engine):
         for mv in movelist:
             newboard = deepcopy(board)
             newboard.execute_move(mv, color)
-            res = self.alphabeta(newboard, color * -1, depth - 1, -opbest, -mybest)
+            res = self.alphabeta(newboard, color * -1, depth - 1, -opbest, -best)
             score = - res[0]
             if score > best:
                 best = score
