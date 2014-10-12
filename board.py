@@ -157,7 +157,7 @@ class Board():
         for x, y in Board._increment_move(origin, direction):
             if self[x][y] == -color:
                 flips.append((x, y))
-            elif self[x][y] == 0:
+            elif (self[x][y] == 0 or (self[x][y] == color and len(flips) == 1)):
                 break
             elif self[x][y] == color and len(flips) > 1:
                 return flips

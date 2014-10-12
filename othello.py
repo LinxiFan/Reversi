@@ -1,8 +1,7 @@
-import argparse, copy, signal, sys, timeit, imp
+import argparse, copy, signal, sys, timeit, imp, traceback
 from board import Board, move_string, print_moves
 
 player = {-1 : "Black", 1 : "White"}
-
 
 def game(white_engine, black_engine, game_time=300.0, verbose=False):
     """ Run a single game. Raise RuntimeError in the event of time expiration.
@@ -73,7 +72,11 @@ def get_move(board, engine, color, move_num, time, **kwargs):
     elif len(legal_moves) == 1:
         return legal_moves[0]
     else:
-        move = engine.get_move(copy.deepcopy(board), color, move_num, time[color], time[-color])
+	try:
+            move = engine.get_move(copy.deepcopy(board), color, move_num, time[color], time[-color])
+	except Exception, e:
+	    print traceback.format_exc()
+	    raise SystemError(color)
 
         if move not in legal_moves:
             raise LookupError(color)
@@ -123,6 +126,17 @@ def main(white_engine, black_engine, game_time, verbose):
             print "\n- " + player[1] + " made an illegal move!"
             print player[-1] + " wins the game! (64-0)"
 	    return (-1, 64, 0)
+	
+    except SystemError, e:
+	if e[0] == -1:
+            print "\n- " + player[-1] + " ended prematurely because of an error!"
+            print player[1] + " wins the game! (64-0)"
+            return (1, 0, 64)
+        else:
+            print "\n- " + player[1] + " ended prematurely because of an error!"
+            print player[-1] + " wins the game! (64-0)"
+            return (-1, 64, 0)
+
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
