@@ -12,12 +12,38 @@ class StudentEngine(Engine):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
         # Get a list of all legal moves.
-        moves = board.get_legal_moves(color)
+        if not self.alpha_beta:
+            tup = self.minimax(board, color, 3)
+            print tup
+            return tup[1]
+    
+    def minimax(self, board, color, depth):
+        if depth == 0:
+            return (self.eval(board, color), None)
+        movelist = board.get_legal_moves(color)
+        best = - float("inf")
+        bestmv = None if len(movelist)==0 else movelist[0]
+        for mv in movelist:
+            newboard = deepcopy(board)
+            newboard.execute_move(mv, color)
+            res = self.minimax(newboard, color * -1, depth - 1)
+            score = - res[0]
+            
+            if score > best:
+                best = score
+                bestmv = mv
+        
+        #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
+        return (best, bestmv)
+            
+    def eval(self, board, color):
+        # Count the # of pieces of each color on the board
+        num_pieces_op = len(board.get_squares(color*-1))
+        num_pieces_me = len(board.get_squares(color))
 
-        # Return the best move according to our simple utility function:
-        # which move yields the largest different in number of pieces for the
-        # given color vs. the opponent?
-	return max(moves, key=lambda move: self._get_cost(board, color, move))
+        # Return the difference in number of pieces
+        return num_pieces_me - num_pieces_op
+
 
     def _get_cost(self, board, color, move):
         """ Return the difference in number of pieces after the given move 
