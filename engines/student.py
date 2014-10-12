@@ -14,10 +14,16 @@ class StudentEngine(Engine):
         number of pieces for that color. """
         
         W, B = to_bitboard(board)
-        print "white"
-        print bitboard_str(W)
-        print "black"
-        print bitboard_str(B)
+        
+        print_bitboard(W)
+        print_bitboard(B)
+        
+        print "white me"
+        print_bitboard(move_gen(W, B))
+        print "black me"
+        print_bitboard(move_gen(B, W))
+        
+        print [to_bitmove(m) for m in board.get_legal_moves(color)]
         
         return board.get_legal_moves(color)[0]
 
@@ -111,12 +117,12 @@ def move_gen_sub(P, mask, dir):
 
 def move_gen(P, O):
     mask = long(O & 0x7E7E7E7E7E7E7E7E)
-    return move_gen_sub(P, mask, 1) \
+    return (move_gen_sub(P, mask, 1) \
             | move_gen_sub(P, O, 8)  \
             | move_gen_sub(P, mask, 7) \
-            | move_gen_sub(P, mask, 9) & ~(P|O)
+            | move_gen_sub(P, mask, 9)) & ~(P|O)
             
-def bitboard_str(BB):
+def print_bitboard(BB):
     bitarr = [1 if (1<<i) & BB != 0 else 0 for i in range(64)]
     s = ""
     for rk in range(7, -1, -1):
@@ -135,5 +141,12 @@ def to_bitboard(board):
             elif board[c][r] == 1:
                 W |= (1 << (8 * r + c))
     return (W, B)
+
+def to_move(bitmove):
+    return (bitmove % 8, bitmove / 8)
+
+def to_bitmove(move):
+    return move[0] + 8 * move[1]
+
                     
 engine = StudentEngine
