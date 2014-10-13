@@ -12,6 +12,12 @@ class StudentEngine(Engine):
         self.alpha_beta = False
         fill_bit_table()
         fill_lsb_table()
+        fill_radial_map()
+#         for k, v in RADIAL_MAP.items():
+#             print "======== ", k, " ========"
+#             for a in v:
+#                 print_bitboard(a)
+#             a = raw_input("resume")
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -24,25 +30,77 @@ class StudentEngine(Engine):
 #         print_bitboard(W)
 #         print_bitboard(B)
         
-        res = self.minimax_bit(W, B, color, DEPTH)
-        print res
-        return to_move(res[1])
-
         # Get a list of all legal moves.
-#         if self.alpha_beta:
-#             return self.alphabeta(board, color, DEPTH, -float("inf"), float("inf"))[1]
-#         else:
-#             return self.minimax(board, color, DEPTH)[1]
+        if self.alpha_beta:
+            return self.alphabeta(board, color, DEPTH, -float("inf"), float("inf"))[1]
+        else:
+            return self.minimax(board, color, DEPTH)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
             return (self.eval(board, color), None)
         movelist = board.get_legal_moves(color)
+
+        W, B = to_bitboard(board)
+        movelistw = sorted([to_bitmove(m) for m in board.get_legal_moves(1)])
+        movelistb = sorted([to_bitmove(m) for m in board.get_legal_moves(-1)])
+        movemapw = move_gen(W, B)
+        movemapb = move_gen(B, W)
+        wc = count_bit(movemapw)
+        bc = count_bit(movemapb)
+#         i = 0
+#         while movemapw != 0:
+#             m, movemapw = pop_lsb(movemapw)
+#             print i, len(movelistw), movemapw
+#             assert movelistw[i] == m
+#             i += 1
+#         assert wc == i
+#         i = 0
+#         while movemapb != 0:
+#             m, movemapb = pop_lsb(movemapb)
+#             print i, len(movelistb), movemapb
+#             assert movelistb[i] == m
+#             i += 1
+#         assert bc == i
+        
         best = - float("inf")
         bestmv = None if len(movelist)==0 else movelist[0]
         for mv in movelist:
             newboard = deepcopy(board)
             newboard.execute_move(mv, color)
+
+            ww, bb = to_bitboard(newboard)
+            tmpW = W
+            tmpB = B
+            mvtmp = to_bitmove(mv)
+            if color > 0:
+                flipmask = flip(W, B, mvtmp) 
+                tmpW ^= flipmask | BIT[mvtmp]
+                tmpB ^= flipmask
+            else:
+                flipmask = flip(B, W, mvtmp) 
+                tmpB ^= flipmask | BIT[mvtmp]
+                tmpW ^= flipmask
+            
+            try:
+                assert ww == tmpW
+                assert bb == tmpB
+            except AssertionError:
+                print "--------------------"
+                board.display([1,2,3])
+                print "move"
+                print_bitboard(BIT[mvtmp])
+                print "FLIP"
+                print_bitboard(flipmask)
+                print "CORRECT W"
+                print_bitboard(ww)
+                print_bitboard(tmpW)
+                print "CORRECT B"
+                print_bitboard(bb)
+                print_bitboard(tmpB)
+                raise AssertionError
+                
+            
             res = self.minimax(newboard, color * -1, depth - 1)
             score = - res[0]
             if score > best:
@@ -175,14 +233,40 @@ def to_bitmove(move):
     return move[0] + 8 * move[1]
 
 DIR = [-1, 1, -8, 8, -7, 9, -9, 7]
+RADIAL_MAP = {}
+
+def fill_radial_map():
+    rad_map = {-1: (-1, 0), 1:(1, 0), -8:(0, -1), 8:(0, 1), -7:(1, -1), 7:(-1, 1), -9:(-1, -1), 9:(1, 1)}
+    for dir, dirtup in rad_map.items():
+        lis = [0] * 64
+        for sqr in range(64):
+            mask = 0L
+            sq = sqr
+            x, y = to_move(sq)
+            sq += dir
+            x += dirtup[0]
+            y += dirtup[1]
+            while 0 <= x < 8 and 0 <= y < 8 and 0 <= sq < 64:
+                mask |= BIT[sq]
+                sq += dir
+                x += dirtup[0]
+                y += dirtup[1]
+            lis[sqr] = mask
+        RADIAL_MAP[dir] = lis
+
 def flip(W, B, mv):
     mask = 0L
     for dir in DIR:
         mvtmp = mv
         mvtmp += dir
-        while mvtmp >= 0 and mvtmp < 64 and (BIT[mvtmp] & B != 0):
-            mask |= BIT[mvtmp]
+        while mvtmp >= 0 and mvtmp < 64 and (BIT[mvtmp] & B != 0) and (BIT[mvtmp] & RADIAL_MAP[dir][mv] != 0):
             mvtmp += dir
+        if (mvtmp >= 0 and mvtmp < 64 and BIT[mvtmp] & W != 0) and (BIT[mvtmp] & RADIAL_MAP[dir][mv] != 0):
+            mvtmp -= dir
+            while mvtmp != mv:
+                mask |= BIT[mvtmp]
+                mvtmp -= dir
+
     return mask
 
 FULL_MASK = 0xFFFFFFFFFFFFFFFF
