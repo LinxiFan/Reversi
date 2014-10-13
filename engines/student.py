@@ -20,9 +20,8 @@ class StudentEngine(Engine):
         
         W, B = to_bitboard(board)
         
-#         res = self.minimax_bit(W, B, color, DEPTH)
-#         print res
-#         return to_move(res[1])
+        res = self.minimax_bit(W, B, color, DEPTH)
+        return to_move(res[1])
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
@@ -30,7 +29,7 @@ class StudentEngine(Engine):
 #         else:
 #             return self.minimax(board, color, DEPTH)[1]
         # debugging
-        return self.debug_movegen(board, color, DEPTH)[1]
+#         return self.debug_movegen(board, color, DEPTH)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
@@ -185,7 +184,7 @@ class StudentEngine(Engine):
                 bestmv = mv
         return (best, bestmv)
     
-#----- bitboard representation -----
+######-------- bitboard representation -------
 def fill_bit_table():
     global BIT
     BIT = [1 << n for n in range(64)]
@@ -318,14 +317,17 @@ def pop_lsb(bitmap):
     return l, bitmap & FULL_MASK
 
 def count_bit(b):
+    b -=  (b >> 1) & 0x5555555555555555;
+    b  = (((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333));
+    b  = ((b >> 4) + b)  & 0x0F0F0F0F0F0F0F0F;
+    return ((b * 0x0101010101010101) & FULL_MASK) >> 56
+
+def count_bit_2(b):
+    raise DeprecationWarning
     cnt = 0
     for i in range(64):
         if b & BIT[i] != 0:
             cnt += 1
     return cnt
-#     b -=  (b >> 1) & 0x5555555555555555;
-#     b  = (((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333));
-#     b  = ((b >> 4) + b)  & 0x0F0F0F0F0F0F0F0F;
-#     return (b * 0x0101010101010101) >> 56
 
 engine = StudentEngine
