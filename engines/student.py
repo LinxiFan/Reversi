@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 5
+DEPTH = 3
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -20,15 +20,17 @@ class StudentEngine(Engine):
         
         W, B = to_bitboard(board)
         
-        res = self.minimax_bit(W, B, color, DEPTH)
-        print res
-        return to_move(res[1])
+#         res = self.minimax_bit(W, B, color, DEPTH)
+#         print res
+#         return to_move(res[1])
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
 #             return self.alphabeta(board, color, DEPTH, -float("inf"), float("inf"))[1]
 #         else:
 #             return self.minimax(board, color, DEPTH)[1]
+        # debugging
+        return self.debug_movegen(board, color, DEPTH)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
@@ -111,6 +113,77 @@ class StudentEngine(Engine):
         return num_pieces_me - num_pieces_op
 
     def _get_cost(self, board, color, move): return 0
+    
+    #------------- DEBUG ONLY ------------
+    def debug_movegen(self, board, color, depth):
+        if depth == 0:
+            return (self.eval(board, color), None)
+        movelist = board.get_legal_moves(color)
+
+        W, B = to_bitboard(board)
+        movelistw = sorted([to_bitmove(m) for m in board.get_legal_moves(1)])
+        movelistb = sorted([to_bitmove(m) for m in board.get_legal_moves(-1)])
+        movemapw = move_gen(W, B)
+        movemapb = move_gen(B, W)
+        w_count = count_bit(movemapw)
+        b_count = count_bit(movemapb)
+        assert w_count == len(movelistw)
+        assert b_count == len(movelistb)
+        i = 0
+        while movemapw != 0:
+            m, movemapw = pop_lsb(movemapw)
+            assert movelistw[i] == m
+            i += 1
+        assert w_count == i
+        i = 0
+        while movemapb != 0:
+            m, movemapb = pop_lsb(movemapb)
+            assert movelistb[i] == m
+            i += 1
+        assert b_count == i
+        
+        best = - float("inf")
+        bestmv = None if len(movelist)==0 else movelist[0]
+        for mv in movelist:
+            newboard = deepcopy(board)
+            newboard.execute_move(mv, color)
+
+            ww, bb = to_bitboard(newboard)
+            tmpW = W
+            tmpB = B
+            mvtmp = to_bitmove(mv)
+            if color > 0:
+                flipmask = flip(W, B, mvtmp) 
+                tmpW ^= flipmask | BIT[mvtmp]
+                tmpB ^= flipmask
+            else:
+                flipmask = flip(B, W, mvtmp) 
+                tmpB ^= flipmask | BIT[mvtmp]
+                tmpW ^= flipmask
+            
+            try:
+                assert ww == tmpW
+                assert bb == tmpB
+            except AssertionError:
+                print "--------------------"
+                board.display([1,2,3])
+                print "move"
+                print_bitboard(BIT[mvtmp])
+                print "FLIP"
+                print_bitboard(flipmask)
+                print "CORRECT W"
+                print_bitboard(ww)
+                print_bitboard(tmpW)
+                print "CORRECT B"
+                print_bitboard(bb)
+                print_bitboard(tmpB)
+                raise AssertionError
+            res = self.minimax(newboard, color * -1, depth - 1)
+            score = - res[0]
+            if score > best:
+                best = score
+                bestmv = mv
+        return (best, bestmv)
     
 #----- bitboard representation -----
 def fill_bit_table():
