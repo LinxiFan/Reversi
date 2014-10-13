@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 6
+DEPTH = 7
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -20,10 +20,12 @@ class StudentEngine(Engine):
         
         W, B = to_bitboard(board)
         
+        wb = (W, B) if color > 0 else (B, W)
+        
         if self.alpha_beta:
-            res = self.alphabeta_bit(W, B, color, DEPTH, -float("inf"), float("inf"))
+            res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
         else:
-            res = self.minimax_bit(W, B, color, DEPTH)
+            res = self.minimax_bit(wb[0], wb[1], DEPTH)
         return to_move(res[1])
 
         # Get a list of all legal moves.
@@ -51,10 +53,10 @@ class StudentEngine(Engine):
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
     
-    def minimax_bit(self, W, B, color, depth):
+    def minimax_bit(self, W, B, depth):
         if depth == 0:
-            return (color * (count_bit(W) - count_bit(B)), None)
-        movemap = move_gen(W, B) if color > 0 else move_gen(B, W)
+            return (count_bit(W) - count_bit(B), None)
+        movemap = move_gen(W, B)
         best = - float("inf")
         bestmv = None
         if movemap != 0:
@@ -66,16 +68,11 @@ class StudentEngine(Engine):
         while True:
             tmpW = W
             tmpB = B
-            if color > 0:
-                flipmask = flip(W, B, mv) 
-                tmpW ^= flipmask | BIT[mv]
-                tmpB ^= flipmask
-            else:
-                flipmask = flip(B, W, mv) 
-                tmpB ^= flipmask | BIT[mv]
-                tmpW ^= flipmask
+            flipmask = flip(W, B, mv) 
+            tmpW ^= flipmask | BIT[mv]
+            tmpB ^= flipmask
 
-            score = -self.minimax_bit(tmpW, tmpB, color* -1, depth - 1)[0]
+            score = -self.minimax_bit(tmpB, tmpW, depth - 1)[0]
             if score > best:
                 best = score
                 bestmv = mv
@@ -88,10 +85,10 @@ class StudentEngine(Engine):
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
     
-    def alphabeta_bit(self, W, B, color, depth, alpha, beta):
+    def alphabeta_bit(self, W, B, depth, alpha, beta):
         if depth == 0:
-            return (color * (count_bit(W) - count_bit(B)), None)
-        movemap = move_gen(W, B) if color > 0 else move_gen(B, W)
+            return (count_bit(W) - count_bit(B), None)
+        movemap = move_gen(W, B)
         best = alpha
         bestmv = None
         if movemap != 0:
@@ -103,16 +100,11 @@ class StudentEngine(Engine):
         while True:
             tmpW = W
             tmpB = B
-            if color > 0:
-                flipmask = flip(W, B, mv) 
-                tmpW ^= flipmask | BIT[mv]
-                tmpB ^= flipmask
-            else:
-                flipmask = flip(B, W, mv) 
-                tmpB ^= flipmask | BIT[mv]
-                tmpW ^= flipmask
+            flipmask = flip(W, B, mv) 
+            tmpW ^= flipmask | BIT[mv]
+            tmpB ^= flipmask
 
-            res = self.alphabeta_bit(tmpW, tmpB, color * -1, depth - 1, -beta, -best)
+            res = self.alphabeta_bit(tmpB, tmpW, depth - 1, -beta, -best)
             score = - res[0]
             if score > best:
                 best = score
