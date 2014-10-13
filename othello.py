@@ -79,6 +79,8 @@ def get_move(board, engine, color, move_num, time, **kwargs):
 	    raise SystemError(color)
 
         if move not in legal_moves:
+            print "legal list", [move_string(m) for m in legal_moves]
+            print "illegal", move_string(move), "=", move
             raise LookupError(color)
 
         return move
