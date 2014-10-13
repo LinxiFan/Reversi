@@ -3,7 +3,7 @@ from engines import Engine
 from copy import deepcopy
 import random 
 
-DEPTH = 4
+DEPTH = 5
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -13,11 +13,6 @@ class StudentEngine(Engine):
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
-#         for k, v in RADIAL_MAP.items():
-#             print "======== ", k, " ========"
-#             for a in v:
-#                 print_bitboard(a)
-#             a = raw_input("resume")
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -228,7 +223,7 @@ def lsb(bitmap):
 def pop_lsb(bitmap):
     l= lsb(bitmap)
     bitmap &= bitmap-1
-    return l, bitmap
+    return l, bitmap & FULL_MASK
 
 def count_bit(b):
     cnt = 0
