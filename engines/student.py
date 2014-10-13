@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
-import random 
 
 DEPTH = 5
 
@@ -170,7 +169,6 @@ def to_move(bitmove):
 def to_bitmove(move):
     return move[0] + 8 * move[1]
 
-DIR = [-1, 1, -8, 8, -7, 9, -9, 7]
 RADIAL_MAP = {}
 
 def fill_radial_map():
@@ -192,9 +190,30 @@ def fill_radial_map():
             lis[sqr] = mask
         RADIAL_MAP[dir] = lis
 
+DIR = [
+[1, -7, -8],
+[-1,-9,-8],
+[1,8,9],
+[7,8,-1],
+[8,9,1,-7,-8],
+[-1,1,-7,-8,-9],
+[7,8,-1,-9,-8],
+[7,8,9,-1,1],
+[-1, 1, -7,7,-8,8,-9,9]]
+
+SQ_DIR = \
+[2, 2, 7, 7, 7, 7, 3, 3,
+ 2, 2, 7, 7, 7, 7, 3, 3 ,
+ 4, 4, 8, 8, 8, 8, 6, 6,
+ 4, 4, 8, 8, 8, 8, 6, 6,
+ 4, 4, 8, 8, 8, 8, 6, 6,
+ 4, 4, 8, 8, 8, 8, 6, 6,
+ 0, 0, 5, 5, 5, 5, 1, 1,
+ 0, 0, 5, 5, 5, 5, 1, 1 ]
+
 def flip(W, B, mv):
     mask = 0L
-    for dir in DIR:
+    for dir in DIR[SQ_DIR[mv]]:
         mvtmp = mv
         mvtmp += dir
         while mvtmp >= 0 and mvtmp < 64 and (BIT[mvtmp] & B != 0) and (BIT[mvtmp] & RADIAL_MAP[dir][mv] != 0):
@@ -211,14 +230,14 @@ FULL_MASK = 0xFFFFFFFFFFFFFFFF
 LSB_HASH = 0x07EDD5E59A4E28C2
 def fill_lsb_table():
     bitmap = 1L
-    global LsbTbl
-    LsbTbl = [0] * 64
+    global LSB_TABLE
+    LSB_TABLE = [0] * 64
     for i in range(64):
-        LsbTbl[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58] = i
+        LSB_TABLE[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58] = i
         bitmap <<= 1
 
 def lsb(bitmap):
-    return LsbTbl[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58]
+    return LSB_TABLE[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58]
 
 def pop_lsb(bitmap):
     l= lsb(bitmap)
