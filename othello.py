@@ -55,8 +55,12 @@ def winner(board):
     black_count = board.count(-1)
     white_count = board.count(1)
     if black_count > white_count:
+	if black_count + white_count != 64:
+		black_count += (64 - black_count - white_count)
         return (-1, black_count, white_count)
     elif white_count > black_count:
+	if black_count + white_count != 64:
+		white_count += (64 - black_count - white_count)
         return (1, black_count, white_count)
     else:
         return (0, black_count, white_count)
