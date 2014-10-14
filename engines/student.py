@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 7
+DEPTH = 3
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -22,11 +22,11 @@ class StudentEngine(Engine):
         
         wb = (W, B) if color > 0 else (B, W)
         
-        if self.alpha_beta:
-            res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
-        else:
-            res = self.minimax_bit(wb[0], wb[1], DEPTH)
-        return to_move(res[1])
+#         if self.alpha_beta:
+#             res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+#         else:
+#             res = self.minimax_bit(wb[0], wb[1], DEPTH)
+#         return to_move(res[1])
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
@@ -34,7 +34,7 @@ class StudentEngine(Engine):
 #         else:
 #             return self.minimax(board, color, DEPTH)[1]
         # debugging
-#         return self.debug_movegen(board, color, DEPTH)[1]
+        return self.debug_movegen(board, color, DEPTH)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
@@ -157,22 +157,40 @@ class StudentEngine(Engine):
         movelistb = sorted([to_bitmove(m) for m in board.get_legal_moves(-1)])
         movemapw = move_gen(W, B)
         movemapb = move_gen(B, W)
+        movemapw_ = movemapw
+        movemapb_ = movemapb
         w_count = count_bit(movemapw)
         b_count = count_bit(movemapb)
-        assert w_count == len(movelistw)
-        assert b_count == len(movelistb)
-        i = 0
-        while movemapw != 0:
-            m, movemapw = pop_lsb(movemapw)
-            assert movelistw[i] == m
-            i += 1
-        assert w_count == i
-        i = 0
-        while movemapb != 0:
-            m, movemapb = pop_lsb(movemapb)
-            assert movelistb[i] == m
-            i += 1
-        assert b_count == i
+        
+        try:
+            assert w_count == len(movelistw)
+            assert b_count == len(movelistb)
+            i = 0
+            while movemapw != 0:
+                m, movemapw = pop_lsb(movemapw)
+                assert movelistw[i] == m
+                i += 1
+            assert w_count == i
+            i = 0
+            while movemapb != 0:
+                m, movemapb = pop_lsb(movemapb)
+                assert movelistb[i] == m
+                i += 1
+            assert b_count == i
+        except (IndexError, AssertionError) as e:
+            print "SYSTEM CRASH DEBUG"
+            print "white movelist"
+            print movelistw
+            print movemapw_
+            print_bitboard(movemapw_)
+            print "wcount =", w_count
+            print "black movelist"
+            print movelistb
+            print movemapb_
+            print_bitboard(movemapb_)
+            print "bcount =", b_count
+            print e
+            raise
         
         best = - float("inf")
         bestmv = None if len(movelist)==0 else movelist[0]
@@ -237,11 +255,11 @@ def move_gen_sub(P, mask, dir):
     return (flip1 << dir) | (flip2 >> dir)
 
 def move_gen(P, O):
-    mask = long(O & 0x7E7E7E7E7E7E7E7E)
-    return (move_gen_sub(P, mask, 1) \
+    mask = O & 0x7E7E7E7E7E7E7E7E
+    return ((move_gen_sub(P, mask, 1) \
             | move_gen_sub(P, O, 8)  \
             | move_gen_sub(P, mask, 7) \
-            | move_gen_sub(P, mask, 9)) & ~(P|O)
+            | move_gen_sub(P, mask, 9)) & ~(P|O)) & FULL_MASK
             
 def print_bitboard(BB):
     bitarr = [1 if (1<<i) & BB != 0 else 0 for i in range(64)]
@@ -253,8 +271,8 @@ def print_bitboard(BB):
     print s
 
 def to_bitboard(board):
-    W = 0L
-    B = 0L
+    W = 0
+    B = 0
     for r in range(8):
         for c in range(8):
             if board[c][r] == -1:
@@ -276,7 +294,7 @@ def fill_radial_map():
     for dir, dirtup in rad_map.items():
         lis = [0] * 64
         for sqr in range(64):
-            mask = 0L
+            mask = 0
             sq = sqr
             x, y = to_move(sq)
             sq += dir
@@ -312,7 +330,7 @@ SQ_DIR = \
  0, 0, 5, 5, 5, 5, 1, 1 ]
 
 def flip(W, B, mv):
-    mask = 0L
+    mask = 0
     for dir in DIR[SQ_DIR[mv]]:
         mvtmp = mv
         mvtmp += dir
@@ -329,15 +347,15 @@ def flip(W, B, mv):
 FULL_MASK = 0xFFFFFFFFFFFFFFFF
 LSB_HASH = 0x07EDD5E59A4E28C2
 def fill_lsb_table():
-    bitmap = 1L
+    bitmap = 1
     global LSB_TABLE
     LSB_TABLE = [0] * 64
     for i in range(64):
-        LSB_TABLE[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58] = i
+        LSB_TABLE[(((bitmap & (~bitmap + 1)) * LSB_HASH) & FULL_MASK) >> 58] = i
         bitmap <<= 1
 
 def lsb(bitmap):
-    return LSB_TABLE[(((bitmap & (~bitmap + 1L)) * LSB_HASH) & FULL_MASK) >> 58]
+    return LSB_TABLE[(((bitmap & (~bitmap + 1)) * LSB_HASH) & FULL_MASK) >> 58]
 
 def pop_lsb(bitmap):
     l= lsb(bitmap)
