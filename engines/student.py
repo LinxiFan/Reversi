@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 6
+DEPTH = 5
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -115,14 +115,14 @@ class StudentEngine(Engine):
     P_SUB_CORNER = 0x42C300000000C342
     
     def eval(self, W, B):
-        cornerw = count_bit(W & self.P_CORNER)
-        cornerb = count_bit(B & self.P_CORNER)
+        mycorner = count_bit(W & self.P_CORNER)
+        opcorner = count_bit(B & self.P_CORNER)
 
         # piece difference
-        mypiece = cornerw * 20
+        mypiece = mycorner * 100
         for i in range(len(self.WEIGHTS)):
             mypiece += self.WEIGHTS[i] * count_bit(W & self.P_RINGS[i])
-        oppiece = cornerb * 20
+        oppiece = opcorner * 100
         for i in range(len(self.WEIGHTS)):
             oppiece += self.WEIGHTS[i] * count_bit(B & self.P_RINGS[i])
         
@@ -132,7 +132,13 @@ class StudentEngine(Engine):
 #             else 0
         scorepiece = mypiece - oppiece
         
-        return scorepiece
+        # mobility
+        mymob = count_bit(move_gen(W, B))
+        opmob = count_bit(move_gen(B, W))
+        
+        scoremob = 20 * (mymob - opmob)
+        
+        return scorepiece + scoremob
         
     
     def minimax_old(self, board, color, depth):

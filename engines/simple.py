@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 6
+DEPTH = 5
 
 class SimpleEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -119,10 +119,10 @@ class SimpleEngine(Engine):
         cornerb = count_bit(B & self.P_CORNER)
 
         # piece difference
-        mypiece = cornerw * 20
+        mypiece = cornerw * 100
         for i in range(len(self.WEIGHTS)):
             mypiece += self.WEIGHTS[i] * count_bit(W & self.P_RINGS[i])
-        oppiece = cornerb * 20
+        oppiece = cornerb * 100
         for i in range(len(self.WEIGHTS)):
             oppiece += self.WEIGHTS[i] * count_bit(B & self.P_RINGS[i])
         
