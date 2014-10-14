@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 5
+DEPTH = 6
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -23,37 +23,21 @@ class StudentEngine(Engine):
         wb = (W, B) if color > 0 else (B, W)
         
         if self.alpha_beta:
-            res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+            res = self.alphabeta(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
         else:
-            res = self.minimax_bit(wb[0], wb[1], DEPTH)
+            res = self.minimax(wb[0], wb[1], DEPTH)
         return to_move(res[1])
+
+        # debugging
+#         return self.debug_movegen(board, color, DEPTH)[1]
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
 #             return self.alphabeta(board, color, DEPTH, -float("inf"), float("inf"))[1]
 #         else:
 #             return self.minimax(board, color, DEPTH)[1]
-        # debugging
-#         return self.debug_movegen(board, color, DEPTH)[1]
     
-    def minimax(self, board, color, depth):
-        if depth == 0:
-            return (self.eval(board, color), None)
-        movelist = board.get_legal_moves(color)
-        best = - float("inf")
-        bestmv = None if len(movelist)==0 else movelist[0]
-        for mv in movelist:
-            newboard = deepcopy(board)
-            newboard.execute_move(mv, color)
-            res = self.minimax(newboard, color * -1, depth - 1)
-            score = - res[0]
-            if score > best:
-                best = score
-                bestmv = mv
-        #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
-        return (best, bestmv)
-    
-    def minimax_bit(self, W, B, depth):
+    def minimax(self, W, B, depth):
         if depth == 0:
             return (count_bit(W) - count_bit(B), None)
         movemap = move_gen(W, B)
@@ -72,7 +56,7 @@ class StudentEngine(Engine):
             tmpW ^= flipmask | BIT[mv]
             tmpB ^= flipmask
 
-            score = -self.minimax_bit(tmpB, tmpW, depth - 1)[0]
+            score = -self.minimax(tmpB, tmpW, depth - 1)[0]
             if score > best:
                 best = score
                 bestmv = mv
@@ -85,7 +69,7 @@ class StudentEngine(Engine):
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
     
-    def alphabeta_bit(self, W, B, depth, alpha, beta):
+    def alphabeta(self, W, B, depth, alpha, beta):
         if depth == 0:
             return (count_bit(W) - count_bit(B), None)
         movemap = move_gen(W, B)
@@ -104,7 +88,7 @@ class StudentEngine(Engine):
             tmpW ^= flipmask | BIT[mv]
             tmpB ^= flipmask
 
-            res = self.alphabeta_bit(tmpB, tmpW, depth - 1, -beta, -best)
+            res = self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)
             score = - res[0]
             if score > best:
                 best = score
@@ -118,16 +102,36 @@ class StudentEngine(Engine):
                 mv, movemap = pop_lsb(movemap)
         return (best, bestmv)
     
-    def alphabeta(self, board, color, depth, alpha, beta):
+    def minimax_old(self, board, color, depth):
         if depth == 0:
             return (self.eval(board, color), None)
+        movelist = board.get_legal_moves(color)
+        best = - float("inf")
+        bestmv = None if len(movelist)==0 else movelist[0]
+        for mv in movelist:
+            newboard = deepcopy(board)
+            newboard.execute_move(mv, color)
+            res = self.minimax_old(newboard, color * -1, depth - 1)
+            score = - res[0]
+            if score > best:
+                best = score
+                bestmv = mv
+        #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
+        return (best, bestmv)
+    
+    def alphabeta_old(self, board, color, depth, alpha, beta):
+        if depth == 0:
+            # Count the # of pieces of each color on the board
+            num_pieces_op = len(board.get_squares(color*-1))
+            num_pieces_me = len(board.get_squares(color))
+            return (num_pieces_me - num_pieces_op, None)
         movelist = board.get_legal_moves(color)
         best = alpha
         bestmv = None if len(movelist)==0 else movelist[0]
         for mv in movelist:
             newboard = deepcopy(board)
             newboard.execute_move(mv, color)
-            res = self.alphabeta(newboard, color * -1, depth - 1, -beta, -best)
+            res = self.alphabeta_old(newboard, color * -1, depth - 1, -beta, -best)
             score = - res[0]
             if score > best:
                 best = score
@@ -136,14 +140,6 @@ class StudentEngine(Engine):
                 return (best, bestmv)
         return (best, bestmv)
             
-    def eval(self, board, color):
-        # Count the # of pieces of each color on the board
-        num_pieces_op = len(board.get_squares(color*-1))
-        num_pieces_me = len(board.get_squares(color))
-
-        # Return the difference in number of pieces
-        return num_pieces_me - num_pieces_op
-
     def _get_cost(self, board, color, move): return 0
     
     #------------- DEBUG ONLY ------------
