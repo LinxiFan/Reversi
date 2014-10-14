@@ -18,30 +18,6 @@ class StudentEngine(Engine):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
         
-        ######## lab
-        for (w, n) in zip(self.WEIGHTS, self.P_RINGS):
-            print "===", w, "==="
-            print_bitboard(n)
-            print ""
-        print "CORNER"
-        print_bitboard(self.P_CORNER)
-        print "SUBCORNER"
-        print_bitboard(self.P_SUB_CORNER)
-            
-#         print "P_CORNER =\n", pos2hex(0, 7, 56, 63)
-#         print "P_-3 =\n", pos2hex(1, 8, 6, 15, 48, 57, 62, 55, 35, 36, 27, 28)
-#         print "P_-7 =\n", pos2hex(9, 14, 49, 54)
-#         print "P_SUB_CORNER\n", pos2hex(9, 14, 49, 54, 1, 8, 6, 15, 48, 57, 62, 55)
-#         print "P_11\n", pos2hex(40, 58, 16, 2, 5, 23, 47, 61)
-#         print "P_-4\n", pos2hex(41, 50, 10, 17, 13, 22, 53, 46)
-#         print "P_8\n", pos2hex(59, 60, 32, 24, 3, 4, 31, 39)
-#         print "P_1\n", pos2hex(51, 52, 33, 25, 11, 12, 30, 38)
-#         print "P_2\n", pos2hex(42, 34, 26, 18, 19, 20, 21, 29, 37, 45, 44, 43)
-#         print "P_-3\n", pos2hex(35, 36, 27, 28)
-        raise StopIteration
-        
-        ######## lab
-        
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
