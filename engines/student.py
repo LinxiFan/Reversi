@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 3
+DEPTH = 5
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -22,11 +22,11 @@ class StudentEngine(Engine):
         
         wb = (W, B) if color > 0 else (B, W)
         
-#         if self.alpha_beta:
-#             res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
-#         else:
-#             res = self.minimax_bit(wb[0], wb[1], DEPTH)
-#         return to_move(res[1])
+        if self.alpha_beta:
+            res = self.alphabeta_bit(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+        else:
+            res = self.minimax_bit(wb[0], wb[1], DEPTH)
+        return to_move(res[1])
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
@@ -34,7 +34,7 @@ class StudentEngine(Engine):
 #         else:
 #             return self.minimax(board, color, DEPTH)[1]
         # debugging
-        return self.debug_movegen(board, color, DEPTH)[1]
+#         return self.debug_movegen(board, color, DEPTH)[1]
     
     def minimax(self, board, color, depth):
         if depth == 0:
