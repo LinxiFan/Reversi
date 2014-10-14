@@ -223,23 +223,18 @@ def fill_bit_table():
     BIT = [1 << n for n in range(64)]
 
 def move_gen_sub(P, mask, dir):
-    flip_l = long(0)
-    flip_r = long(0)
-    mask_l = long(0)
-    mask_r = long(0)
     dir2 = long(dir * 2)
-    
-    flip_l  = mask & (P << dir)
-    flip_r  = mask & (P >> dir)
-    flip_l |= mask & (flip_l << dir)
-    flip_r |= mask & (flip_r >> dir)
-    mask_l  = mask & (mask << dir)
-    mask_r  = mask & (mask >> dir)
-    flip_l |= mask_l & (flip_l << dir2)
-    flip_r |= mask_r & (flip_r >> dir2)
-    flip_l |= mask_l & (flip_l << dir2)
-    flip_r |= mask_r & (flip_r >> dir2)
-    return (flip_l << dir) | (flip_r >> dir)
+    flip1  = mask & (P << dir)
+    flip2  = mask & (P >> dir)
+    flip1 |= mask & (flip1 << dir)
+    flip2 |= mask & (flip2 >> dir)
+    mask1  = mask & (mask << dir)
+    mask2  = mask & (mask >> dir)
+    flip1 |= mask1 & (flip1 << dir2)
+    flip2 |= mask2 & (flip2 >> dir2)
+    flip1 |= mask1 & (flip1 << dir2)
+    flip2 |= mask2 & (flip2 >> dir2)
+    return (flip1 << dir) | (flip2 >> dir)
 
 def move_gen(P, O):
     mask = long(O & 0x7E7E7E7E7E7E7E7E)
