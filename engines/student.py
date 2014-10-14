@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 6
+DEPTH = 5
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -21,7 +21,7 @@ class StudentEngine(Engine):
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
-        
+         
         if self.alpha_beta:
             res = self.alphabeta(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
         else:
@@ -29,7 +29,7 @@ class StudentEngine(Engine):
         return to_move(res[1])
 
         # debugging
-#         return self.debug_movegen(board, color, DEPTH)[1]
+#         return self._debug_bb(board, color, DEPTH)[1]
 
         # Get a list of all legal moves.
 #         if self.alpha_beta:
@@ -104,7 +104,7 @@ class StudentEngine(Engine):
     
     def minimax_old(self, board, color, depth):
         if depth == 0:
-            return (self.eval(board, color), None)
+            return (self.eval_old(board, color), None)
         movelist = board.get_legal_moves(color)
         best = - float("inf")
         bestmv = None if len(movelist)==0 else movelist[0]
@@ -121,10 +121,7 @@ class StudentEngine(Engine):
     
     def alphabeta_old(self, board, color, depth, alpha, beta):
         if depth == 0:
-            # Count the # of pieces of each color on the board
-            num_pieces_op = len(board.get_squares(color*-1))
-            num_pieces_me = len(board.get_squares(color))
-            return (num_pieces_me - num_pieces_op, None)
+            return (self.eval_old(board, color), None)
         movelist = board.get_legal_moves(color)
         best = alpha
         bestmv = None if len(movelist)==0 else movelist[0]
@@ -142,10 +139,16 @@ class StudentEngine(Engine):
             
     def _get_cost(self, board, color, move): return 0
     
+    def eval_old(self, board, color):
+        # Count the # of pieces of each color on the board
+        num_pieces_op = len(board.get_squares(color*-1))
+        num_pieces_me = len(board.get_squares(color))
+        return num_pieces_me - num_pieces_op
+    
     #------------- DEBUG ONLY ------------
-    def debug_movegen(self, board, color, depth):
+    def _debug_bb(self, board, color, depth):
         if depth == 0:
-            return (self.eval(board, color), None)
+            return (self.eval_old(board, color), None)
         movelist = board.get_legal_moves(color)
 
         W, B = to_bitboard(board)
@@ -174,7 +177,7 @@ class StudentEngine(Engine):
                 i += 1
             assert b_count == i
         except (IndexError, AssertionError) as e:
-            print "SYSTEM CRASH DEBUG"
+            print "MOVEGEN CRASH DEBUG"
             print "white movelist"
             print movelistw
             print movemapw_
@@ -211,7 +214,7 @@ class StudentEngine(Engine):
                 assert ww == tmpW
                 assert bb == tmpB
             except AssertionError:
-                print "--------------------"
+                print "MAKE MOVE CRASH DEBUG"
                 board.display([1,2,3])
                 print "move"
                 print_bitboard(BIT[mvtmp])
@@ -224,7 +227,7 @@ class StudentEngine(Engine):
                 print_bitboard(bb)
                 print_bitboard(tmpB)
                 raise AssertionError
-            res = self.minimax(newboard, color * -1, depth - 1)
+            res = self._debug_bb(newboard, color * -1, depth - 1)
             score = - res[0]
             if score > best:
                 best = score
