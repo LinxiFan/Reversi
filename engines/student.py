@@ -18,6 +18,30 @@ class StudentEngine(Engine):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
         
+        ######## lab
+        for (w, n) in zip(self.WEIGHTS, self.P_RINGS):
+            print "===", w, "==="
+            print_bitboard(n)
+            print ""
+        print "CORNER"
+        print_bitboard(self.P_CORNER)
+        print "SUBCORNER"
+        print_bitboard(self.P_SUB_CORNER)
+            
+#         print "P_CORNER =\n", pos2hex(0, 7, 56, 63)
+#         print "P_-3 =\n", pos2hex(1, 8, 6, 15, 48, 57, 62, 55, 35, 36, 27, 28)
+#         print "P_-7 =\n", pos2hex(9, 14, 49, 54)
+#         print "P_SUB_CORNER\n", pos2hex(9, 14, 49, 54, 1, 8, 6, 15, 48, 57, 62, 55)
+#         print "P_11\n", pos2hex(40, 58, 16, 2, 5, 23, 47, 61)
+#         print "P_-4\n", pos2hex(41, 50, 10, 17, 13, 22, 53, 46)
+#         print "P_8\n", pos2hex(59, 60, 32, 24, 3, 4, 31, 39)
+#         print "P_1\n", pos2hex(51, 52, 33, 25, 11, 12, 30, 38)
+#         print "P_2\n", pos2hex(42, 34, 26, 18, 19, 20, 21, 29, 37, 45, 44, 43)
+#         print "P_-3\n", pos2hex(35, 36, 27, 28)
+        raise StopIteration
+        
+        ######## lab
+        
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
@@ -39,7 +63,7 @@ class StudentEngine(Engine):
     
     def minimax(self, W, B, depth):
         if depth == 0:
-            return (count_bit(W) - count_bit(B), None)
+            return (self.eval(W, B), None)
         movemap = move_gen(W, B)
         best = - float("inf")
         bestmv = None
@@ -71,7 +95,7 @@ class StudentEngine(Engine):
     
     def alphabeta(self, W, B, depth, alpha, beta):
         if depth == 0:
-            return (count_bit(W) - count_bit(B), None)
+            return (self.eval(W, B), None)
         movemap = move_gen(W, B)
         best = alpha
         bestmv = None
@@ -101,6 +125,23 @@ class StudentEngine(Engine):
             else:
                 mv, movemap = pop_lsb(movemap)
         return (best, bestmv)
+    
+    WEIGHTS = \
+    [20, -3, -7, 11, -4, 8, 1, 2]
+    P_RINGS = [0x8100000000000081, 
+               0x4281001818008142,
+               0x42000000004200,
+               0x2400810000810024,
+               0x24420000422400,
+               0x1800008181000018,
+               0x18004242001800,
+               0x3C24243C0000]
+    P_CORNER = 0x8100000000000081
+    P_SUB_CORNER = 0x42C300000000C342
+    
+    def eval(self, W, B):
+        pass
+        
     
     def minimax_old(self, board, color, depth):
         if depth == 0:
@@ -374,5 +415,14 @@ def count_bit_2(b):
         if b & BIT[i] != 0:
             cnt += 1
     return cnt
+
+# helper: print a hex representation of the position
+def pos2hex(*plist):
+    n = 0
+    for p in plist:
+        n |= BIT[p]
+    print_bitboard(n)
+    s = hex(n).upper()
+    return "0x" + s[2:]
 
 engine = StudentEngine
