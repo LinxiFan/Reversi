@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 
-DEPTH = 5
+DEPTH = 6
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -103,9 +103,8 @@ class StudentEngine(Engine):
         return (best, bestmv)
     
     WEIGHTS = \
-    [20, -3, -7, 11, -4, 8, 1, 2]
-    P_RINGS = [0x8100000000000081, 
-               0x4281001818008142,
+    [-3, -7, 11, -4, 8, 1, 2]
+    P_RINGS = [0x4281001818008142,
                0x42000000004200,
                0x2400810000810024,
                0x24420000422400,
@@ -116,7 +115,24 @@ class StudentEngine(Engine):
     P_SUB_CORNER = 0x42C300000000C342
     
     def eval(self, W, B):
-        pass
+        cornerw = count_bit(W & self.P_CORNER)
+        cornerb = count_bit(B & self.P_CORNER)
+
+        # piece difference
+        mypiece = cornerw * 20
+        for i in range(len(self.WEIGHTS)):
+            mypiece += self.WEIGHTS[i] * count_bit(W & self.P_RINGS[i])
+        oppiece = cornerb * 20
+        for i in range(len(self.WEIGHTS)):
+            oppiece += self.WEIGHTS[i] * count_bit(B & self.P_RINGS[i])
+        
+#         scorepiece = \
+#             10.0 * mypiece / (mypiece + oppiece) if mypiece > oppiece \
+#             else -10.0 * oppiece / (mypiece + oppiece) if mypiece < oppiece \
+#             else 0
+        scorepiece = mypiece - oppiece
+        
+        return scorepiece
         
     
     def minimax_old(self, board, color, depth):
