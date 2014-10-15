@@ -96,21 +96,63 @@ def signal_handler(signal, frame):
 
 result = (0, 0, 0)
 
+TRIAL = 100
 def main(white_engine, black_engine, game_time, verbose):
     try:
-    	board = game(white_engine, black_engine, game_time, verbose)
-    	stats = winner(board)
-    	bscore = str(stats[1])
-    	wscore = str(stats[2])
+        wwins = ties = bwins = 0
+        
+        player[-1] = player[-1][:-7]
+        player[1] = player[1][:-7]
 
+        for i in range(TRIAL/2):
+             print "NEW GAME"
+             print "White:", player[1]
+             print "Black:", player[-1]
+             board = game(white_engine, black_engine, game_time, verbose)
+             stats = winner(board)
+             bscore = str(stats[1])
+             wscore = str(stats[2])
+             if stats[0] == -1:
+                 bwins += 1
+                 print "- " + player[-1] + " wins the game! (" + bscore + "-" + wscore + ")"
+             elif stats[0] == 1:
+                 wwins += 1
+                 print "- " + player[1] + " wins the game! (" + wscore + "-" + bscore + ")"
+             else:
+                 ties += 1
+                 print "- " + player[-1] + " and " + player[1] + " are tied! (" + bscore + "-" + wscore + ")"
+            
+        for i in range(TRIAL/2, TRIAL):
+             print "NEW GAME"
+             print "White:", player[-1]
+             print "Black:", player[1]
+             board = game(black_engine, white_engine, game_time, verbose)
+             stats = winner(board)
+             bscore = str(stats[1])
+             wscore = str(stats[2])
+             if stats[0] == -1:
+                 wwins += 1
+                 print "- " + player[1] + " wins the game! (" + bscore + "-" + wscore + ")"
+             elif stats[0] == 1:
+                 bwins += 1
+                 print "- " + player[-1] + " wins the game! (" + wscore + "-" + bscore + ")"
+             else:
+                 ties += 1
+                 print "- " + player[1] + " and " + player[-1] + " are tied! (" + bscore + "-" + wscore + ")"
+            
+        print "========== FINAL REPORT =========="
+        print player[1], "\t", wwins
+        print player[-1], "\t", bwins
+        print "Ties \t", ties
+        
     	if stats[0] == -1:
-            print "- " + player[-1] + " wins the game! (" + bscore + "-" + wscore + ")"
+#             print "- " + player[-1] + " wins the game! (" + bscore + "-" + wscore + ")"
 	    return (-1, int(bscore), int(wscore))
     	elif stats[0] == 1:
-            print "- " + player[1] + " wins the game! (" + wscore + "-" + bscore + ")"
+#             print "- " + player[1] + " wins the game! (" + wscore + "-" + bscore + ")"
             return (1, int(bscore), int(wscore))
 	else:
-            print "- " + player[-1] + " and " + player[1] + " are tied! (" + bscore + "-" + wscore + ")"
+#             print "- " + player[-1] + " and " + player[1] + " are tied! (" + bscore + "-" + wscore + ")"
             return (0, int(bscore), int(wscore))
 
     except RuntimeError, e:
@@ -154,7 +196,7 @@ if __name__ == '__main__':
     parser.add_argument("white_engine", type=str, nargs=1, help="white engine (human, oneply, random, student)")
     parser.add_argument("-aB", action="store_true", help="turn on alpha-beta pruning for the black player")
     parser.add_argument("-aW", action="store_true", help="turn on alpha-beta pruning for the white player")
-    parser.add_argument("-t", type=int, action="store", help="adjust time limit", default=30)
+    parser.add_argument("-t", type=int, action="store", help="adjust time limit", default=60)
     parser.add_argument("-v", action="store_true", help="display the board on each turn") 
     args = parser.parse_args();
 
