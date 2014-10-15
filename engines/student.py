@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 from random import shuffle
+import heapq
 
 DEPTH = 4
 
@@ -13,6 +14,8 @@ class StudentEngine(Engine):
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
+        # transposition table
+        self.TT = {}
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -117,6 +120,9 @@ class StudentEngine(Engine):
     P_SUB_CORNER = 0x42C300000000C342
     
     def eval(self, W, B):
+        if (W, B) in self.TT:
+            return self.TT[W, B]
+        
         w0 = W & BIT[0] != 0
         w1 = W & BIT[7] != 0
         w2 = W & BIT[56] != 0
@@ -162,7 +168,9 @@ class StudentEngine(Engine):
         
         scoremob = 20 * wmob
         
-        return scorepiece + scoreunstable + scoremob
+        score = scorepiece + scoreunstable + scoremob
+        self.TT[W, B] = score
+        return score
         
     
     def minimax_old(self, board, color, depth):
