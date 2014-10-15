@@ -11,6 +11,7 @@ class StudentEngine(Engine):
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
+        self.depth = 0
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -28,20 +29,22 @@ class StudentEngine(Engine):
                     return (5, 2)
                 
         # timing
-        DEPTH = 5
-        if move_num < 20 and time_remaining > 5:
-            DEPTH = 6
+        self.depth = 5
+        if move_num > 5 and time_remaining > 8:
+            self.depth = 6
         if time_remaining < 2:
-            DEPTH = 4
-        print "DEPTH", DEPTH, "at round", move_num
+            self.depth = 4
+        if time_remaining < 0.5:
+            self.depth = 3
+        print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
          
         if self.alpha_beta:
-            res = self.alphabeta(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+            res = self.alphabeta(wb[0], wb[1], self.depth, -float("inf"), float("inf"))
         else:
-            res = self.minimax(wb[0], wb[1], DEPTH)
+            res = self.minimax(wb[0], wb[1], self.depth)
         return to_move(res[1])
 
         # debugging
@@ -108,6 +111,9 @@ class StudentEngine(Engine):
                 return (1e7 if wscore > bscore else \
                             0 if wscore == bscore else \
                             -1e7, None)
+        elif len(mvlist) == 1 and depth == self.depth:
+            # if there's one move at the top level, don't search at all
+            return (0, mvlist[0])
         else:
             shuffle(mvlist)
             bestmv = mvlist[0]
@@ -169,7 +175,7 @@ class StudentEngine(Engine):
             wunstable += (W & BIT[62] != 0) + (W & BIT[54] != 0) + (W & BIT[55] != 0)
             bunstable += (B & BIT[62] != 0) + (B & BIT[54] != 0) + (B & BIT[55] != 0)
 
-        scoreunstable = - 20.0 * (wunstable - bunstable)
+        scoreunstable = - 10.0 * (wunstable - bunstable)
         
         # piece difference
         wpiece = (w0 + w1 + w2 + w3) * 100.0
@@ -188,7 +194,7 @@ class StudentEngine(Engine):
         # mobility
         wmob = count_bit(move_gen(W, B))
         
-        scoremob = 20 * wmob
+        scoremob = 5 * wmob
         
         return scorepiece + scoreunstable + scoremob
         
