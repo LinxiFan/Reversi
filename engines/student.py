@@ -4,9 +4,8 @@ from copy import deepcopy
 from random import shuffle
 
 class StudentEngine(Engine):
-    """ Game engine that implements a simple fitness function maximizing the
-    difference in number of pieces in the given color's favor. """
     def __init__(self):
+        # initialize a few pre-calculated tables
         self.alpha_beta = False
         fill_bit_table()
         fill_lsb_table()
@@ -15,9 +14,6 @@ class StudentEngine(Engine):
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
-        """ Return a move for the given color that maximizes the difference in 
-        number of pieces for that color. """
-        
         # simple opening book
         if move_num == 0:
             if color < 0:
@@ -36,6 +32,8 @@ class StudentEngine(Engine):
             self.depth = 4
         if time_remaining < 0.5:
             self.depth = 3
+        if time_remaining < 0.2:
+            self.depth = 1
         print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining
         W, B = to_bitboard(board)
         
@@ -44,7 +42,7 @@ class StudentEngine(Engine):
         if self.alpha_beta:
             res = self.alphabeta(wb[0], wb[1], self.depth, -float("inf"), float("inf"))
         else:
-            res = self.minimax(wb[0], wb[1], self.depth)
+            res = self.minimax(wb[0], wb[1], 3)
         return to_move(res[1])
 
         # debugging
