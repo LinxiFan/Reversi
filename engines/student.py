@@ -3,7 +3,7 @@ from engines import Engine
 from copy import deepcopy
 from random import shuffle
 
-DEPTH = 6
+DEPTH = 8
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -24,7 +24,8 @@ class StudentEngine(Engine):
         wb = (W, B) if color > 0 else (B, W)
          
         if self.alpha_beta:
-            res = self.alphabeta(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+#             res = self.alphabeta(wb[0], wb[1], DEPTH, -float("inf"), float("inf"))
+            res = self.iterdeep(wb[0], wb[1], DEPTH)
         else:
             res = self.minimax(wb[0], wb[1], DEPTH)
         return to_move(res[1])
@@ -69,6 +70,18 @@ class StudentEngine(Engine):
             
         #print "color", "white" if color == 1 else "black", "depth", depth, "best", best, "legals", len(movelist)
         return (best, bestmv)
+    
+    def iterdeep(self, W, B, maxdepth):
+        lower = -float("inf")
+        upper = float("inf")
+        delta = 400
+        for depth in range(1, maxdepth, 2):
+            res = self.alphabeta(W, B, depth, lower, upper)
+            lower = res[0] - delta
+            upper = res[0] + delta
+            delta /= 2
+        
+        return res
     
     def alphabeta(self, W, B, depth, alpha, beta):
         movemap = move_gen(W, B)
