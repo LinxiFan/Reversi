@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
+from random import shuffle
 
 DEPTH = 5
 
@@ -74,14 +75,19 @@ class StudentEngine(Engine):
             return (self.eval(W, B), None)
         movemap = move_gen(W, B)
         best = alpha
-        bestmv = None
-        if movemap != 0:
-            bestmv, movemap = pop_lsb(movemap)
-        else:
-            return (best, None)
-        mv = bestmv
         
-        while True:
+        mvlist = []
+        while movemap != 0:
+            mv, movemap = pop_lsb(movemap)
+            mvlist.append(mv)
+        
+        if len(mvlist) == 0:
+            return (best, None)
+        else:
+#             shuffle(mvlist)
+            bestmv = mvlist[0]
+            
+        for mv in mvlist:
             tmpW = W
             tmpB = B
             flipmask = flip(W, B, mv) 
@@ -96,10 +102,6 @@ class StudentEngine(Engine):
             if best >= beta:
                 return (best, bestmv)
             
-            if movemap == 0:
-                break
-            else:
-                mv, movemap = pop_lsb(movemap)
         return (best, bestmv)
     
     WEIGHTS = \
