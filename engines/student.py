@@ -82,7 +82,16 @@ class StudentEngine(Engine):
             mvlist.append(mv)
         
         if len(mvlist) == 0:
-            return (best, None)
+            # we don't have any legal moves. Let's see if opponent has any
+            if move_gen(B, W) != 0:
+                return self.alphabeta(B, W, depth - 1, -beta, -best)
+            else:
+                # no one has legal move. Game ends
+                wscore = count_bit(W)
+                bscore = count_bit(B)
+                return (1e7 if wscore > bscore else \
+                            0 if wscore == bscore else \
+                            -1e7, None)
         else:
             shuffle(mvlist)
             bestmv = mvlist[0]
