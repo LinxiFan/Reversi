@@ -3,13 +3,15 @@ from engines import Engine
 from copy import deepcopy
 from random import shuffle
 
-DEPTH = 8
+DEPTH = 4
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
     difference in number of pieces in the given color's favor. """
     def __init__(self):
         self.alpha_beta = False
+        self.iterdepth = 0
+        self.bestmv = None
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
@@ -75,10 +77,13 @@ class StudentEngine(Engine):
         lower = -float("inf")
         upper = float("inf")
         delta = 400
-        for depth in range(1, maxdepth, 2):
+        for depth in range(2, maxdepth+1, 2):
             res = self.alphabeta(W, B, depth, lower, upper)
+            self.bestmv = res[1]
+            self.iterdepth = depth
             lower = res[0] - delta
             upper = res[0] + delta
+#             print "SCORE", res[0], "\tMOVE", res[1]
             delta /= 2
         
         return res
@@ -109,6 +114,8 @@ class StudentEngine(Engine):
         else:
             shuffle(mvlist)
             bestmv = mvlist[0]
+            if depth == self.iterdepth:
+                mvlist[0] = self.bestmv
             
         for mv in mvlist:
             tmpW = W
