@@ -194,8 +194,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Play the Othello game with different engines.")
     parser.add_argument("black_engine", type=str, nargs=1, help="black engine (human, oneply, random, student)")
     parser.add_argument("white_engine", type=str, nargs=1, help="white engine (human, oneply, random, student)")
-    parser.add_argument("-aB", action="store_true", help="turn on alpha-beta pruning for the black player")
-    parser.add_argument("-aW", action="store_true", help="turn on alpha-beta pruning for the white player")
+    parser.add_argument("-mB", action="store_true", help="turn on alpha-beta pruning for the black player")
+    parser.add_argument("-mW", action="store_true", help="turn on alpha-beta pruning for the white player")
     parser.add_argument("-t", type=int, action="store", help="adjust time limit", default=60)
     parser.add_argument("-v", action="store_true", help="display the board on each turn") 
     args = parser.parse_args();
@@ -212,10 +212,11 @@ if __name__ == '__main__':
 	engine_b = engines_b.__dict__[black_engine].__dict__['engine']()
         engine_w = engines_w.__dict__[white_engine].__dict__['engine']()
         
-	if (args.aB and black_engine != "greedy" and black_engine != "human" and black_engine != "random"):
-	    engine_b.alpha_beta = True
-	if (args.aW and white_engine != "greedy" and white_engine != "human" and white_engine != "random"):
-            engine_w.alpha_beta = True
+	if (black_engine != "greedy" and black_engine != "human" and black_engine != "random"):
+	    engine_b.alpha_beta = not args.mB
+	if (white_engine != "greedy" and white_engine != "human" and white_engine != "random"):
+            engine_w.alpha_beta = not args.mW
+
 	v = (args.v or white_engine == "human" or black_engine == "human")
         # Play game
 	print player[-1] + " vs. " + player[1] + "\n"
