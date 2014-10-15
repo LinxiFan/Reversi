@@ -2,9 +2,8 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 from random import shuffle
-import heapq
 
-DEPTH = 4
+DEPTH = 6
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -72,26 +71,21 @@ class StudentEngine(Engine):
         return (best, bestmv)
     
     def alphabeta(self, W, B, depth, alpha, beta):
-        if depth == 0:
-            return (self.eval(W, B), None)
         movemap = move_gen(W, B)
         best = alpha
         
         mvlist = []
         while movemap != 0:
             mv, movemap = pop_lsb(movemap)
-            tmpW = W
-            tmpB = B
-            flipmask = flip(W, B, mv) 
-            tmpW ^= flipmask | BIT[mv]
-            tmpB ^= flipmask
-            # negate because minimax
-            mvlist.append((-self.eval(tmpB, tmpW), mv, tmpW, tmpB))
+            mvlist.append(mv)
         
         if len(mvlist) == 0:
             # we don't have any legal moves. Let's see if opponent has any
             if move_gen(B, W) != 0:
-                return self.alphabeta(B, W, depth - 1, -beta, -best)
+                if depth == 1:
+                    return (- self.eval(B, W), None)
+                else:
+                    return  (-self.alphabeta(B, W, depth - 1, -beta, -best)[0], None)
             else:
                 # no one has legal move. Game ends
                 wscore = count_bit(W)
@@ -99,15 +93,22 @@ class StudentEngine(Engine):
                 return (1e7 if wscore > bscore else \
                             0 if wscore == bscore else \
                             -1e7, None)
+        else:
+            shuffle(mvlist)
+            bestmv = mvlist[0]
+            
+        for mv in mvlist:
+            tmpW = W
+            tmpB = B
+            flipmask = flip(W, B, mv) 
+            tmpW ^= flipmask | BIT[mv]
+            tmpB ^= flipmask
 
-        if depth == 1:
-            # we are almost leaf node
-            return max(mvlist)[:2]
+            if depth == 1:
+                score = - self.eval(tmpB, tmpW)
+            else: # save a recursive call
+                score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
 
-        mvlist.sort(reverse=True)
-        bestmv = mvlist[0][1]
-        for _, mv, tmpW, tmpB in mvlist:
-            score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
             if score > best:
                 best = score
                 bestmv = mv
