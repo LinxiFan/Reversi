@@ -121,6 +121,9 @@ def main(white_engine, black_engine, game_time, verbose):
              else:
                  ties += 1
                  print "- " + player[-1] + " and " + player[1] + " are tied! (" + bscore + "-" + wscore + ")"
+             print player[1], "\t", wwins
+             print player[-1], "\t", bwins
+             print "Ties \t\t", ties
             
         for i in range(TRIAL/2, TRIAL):
              print "NEW GAME"
@@ -139,11 +142,14 @@ def main(white_engine, black_engine, game_time, verbose):
              else:
                  ties += 1
                  print "- " + player[1] + " and " + player[-1] + " are tied! (" + bscore + "-" + wscore + ")"
+             print player[1], "\t", wwins
+             print player[-1], "\t", bwins
+             print "Ties \t\t", ties
             
         print "========== FINAL REPORT =========="
         print player[1], "\t", wwins
         print player[-1], "\t", bwins
-        print "Ties \t", ties
+        print "Ties \t\t", ties
         
     	if stats[0] == -1:
 #             print "- " + player[-1] + " wins the game! (" + bscore + "-" + wscore + ")"

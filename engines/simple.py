@@ -3,7 +3,7 @@ from engines import Engine
 from copy import deepcopy
 from random import shuffle
 
-DEPTH = 5
+DEPTH = 4
 
 class SimpleEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
