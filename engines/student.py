@@ -3,8 +3,6 @@ from engines import Engine
 from copy import deepcopy
 from random import shuffle
 
-DEPTH = 6
-
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
     difference in number of pieces in the given color's favor. """
@@ -28,7 +26,14 @@ class StudentEngine(Engine):
                     return (2, 5)
                 elif board[4][2] == -1 or board[5][3] == -1:
                     return (5, 2)
-
+                
+        # timing
+        DEPTH = 5
+        if move_num < 20 and time_remaining > 5:
+            DEPTH = 6
+        if time_remaining < 2:
+            DEPTH = 4
+        print "DEPTH", DEPTH, "at round", move_num
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
