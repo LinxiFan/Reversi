@@ -19,6 +19,16 @@ class StudentEngine(Engine):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
         
+        # simple opening book
+        if move_num == 0:
+            if color < 0:
+                return (2, 4)
+            else:
+                if board[2][4] == -1 or board[3][5] == -1:
+                    return (2, 5)
+                elif board[4][2] == -1 or board[5][3] == -1:
+                    return (5, 2)
+
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
@@ -154,7 +164,7 @@ class StudentEngine(Engine):
             wunstable += (W & BIT[62] != 0) + (W & BIT[54] != 0) + (W & BIT[55] != 0)
             bunstable += (B & BIT[62] != 0) + (B & BIT[54] != 0) + (B & BIT[55] != 0)
 
-        scoreunstable = - 30.0 * (wunstable - bunstable)
+        scoreunstable = - 20.0 * (wunstable - bunstable)
         
         # piece difference
         wpiece = (w0 + w1 + w2 + w3) * 100.0
