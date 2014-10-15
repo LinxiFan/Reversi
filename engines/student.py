@@ -136,9 +136,8 @@ class StudentEngine(Engine):
         
         # mobility
         mymob = count_bit(move_gen(W, B))
-        opmob = count_bit(move_gen(B, W))
         
-        scoremob = 20 * (mymob - opmob)
+        scoremob = 20 * mymob
         
         return scorepiece + scoremob
         
