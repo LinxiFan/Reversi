@@ -117,29 +117,52 @@ class StudentEngine(Engine):
     P_SUB_CORNER = 0x42C300000000C342
     
     def eval(self, W, B):
-        mycorner = count_bit(W & self.P_CORNER)
-        opcorner = count_bit(B & self.P_CORNER)
+        w0 = W & BIT[0] != 0
+        w1 = W & BIT[7] != 0
+        w2 = W & BIT[56] != 0
+        w3 = W & BIT[63] != 0
+        b0 = B & BIT[0] != 0
+        b1 = B & BIT[7] != 0
+        b2 = B & BIT[56] != 0
+        b3 = B & BIT[63] != 0
+        
+        # stability
+        wunstable = bunstable = 0
+        if w0 != 1 and b0 != 1:
+            wunstable += (W & BIT[1] != 0) + (W & BIT[8] != 0) + (W & BIT[9] != 0)
+            bunstable += (B & BIT[1] != 0) + (B & BIT[8] != 0) + (B & BIT[9] != 0)
+        if w1 != 1 and b1 != 1:
+            wunstable += (W & BIT[6] != 0) + (W & BIT[14] != 0) + (W & BIT[15] != 0)
+            bunstable += (B & BIT[6] != 0) + (B & BIT[14] != 0) + (B & BIT[15] != 0)
+        if w2 != 1 and b2 != 1:
+            wunstable += (W & BIT[48] != 0) + (W & BIT[49] != 0) + (W & BIT[57] != 0)
+            bunstable += (B & BIT[48] != 0) + (B & BIT[49] != 0) + (B & BIT[57] != 0)
+        if w3 != 1 and b3 != 1:
+            wunstable += (W & BIT[62] != 0) + (W & BIT[54] != 0) + (W & BIT[55] != 0)
+            bunstable += (B & BIT[62] != 0) + (B & BIT[54] != 0) + (B & BIT[55] != 0)
 
+        scoreunstable = - 30.0 * (wunstable - bunstable)
+        
         # piece difference
-        mypiece = mycorner * 100
+        wpiece = (w0 + w1 + w2 + w3) * 100.0
         for i in range(len(self.WEIGHTS)):
-            mypiece += self.WEIGHTS[i] * count_bit(W & self.P_RINGS[i])
-        oppiece = opcorner * 100
+            wpiece += self.WEIGHTS[i] * count_bit(W & self.P_RINGS[i])
+        bpiece = (b0 + b1 + b2 + b3) * 100.0
         for i in range(len(self.WEIGHTS)):
-            oppiece += self.WEIGHTS[i] * count_bit(B & self.P_RINGS[i])
+            bpiece += self.WEIGHTS[i] * count_bit(B & self.P_RINGS[i])
         
 #         scorepiece = \
-#             10.0 * mypiece / (mypiece + oppiece) if mypiece > oppiece \
-#             else -10.0 * oppiece / (mypiece + oppiece) if mypiece < oppiece \
+#             10.0 * wpiece / (wpiece + bpiece) if wpiece > bpiece \
+#             else -10.0 * bpiece / (wpiece + bpiece) if wpiece < bpiece \
 #             else 0
-        scorepiece = mypiece - oppiece
+        scorepiece = wpiece - bpiece
         
         # mobility
-        mymob = count_bit(move_gen(W, B))
+        wmob = count_bit(move_gen(W, B))
         
-        scoremob = 20 * mymob
+        scoremob = 20 * wmob
         
-        return scorepiece + scoremob
+        return scorepiece + scoreunstable + scoremob
         
     
     def minimax_old(self, board, color, depth):
