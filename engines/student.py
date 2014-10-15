@@ -2,9 +2,8 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 from random import shuffle
-import heapq
 
-DEPTH = 5
+DEPTH = 4
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -14,19 +13,11 @@ class StudentEngine(Engine):
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
-        # transposition table
-        self.TT = {}
-        self.TTCounter = {}
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
-        
-        print move_num
-        print "Transposition size", len(self.TT)
-        if len(self.TT) != 0:
-            print "max repetition", heapq.nlargest(10, self.TTCounter.values())
         
         W, B = to_bitboard(board)
         
@@ -80,15 +71,8 @@ class StudentEngine(Engine):
         return (best, bestmv)
     
     def alphabeta(self, W, B, depth, alpha, beta):
-        if (W, B) in self.TTCounter:
-            self.TTCounter[W, B] += 1
-        else:
-            self.TTCounter[W, B] = 1
-
-            
         if depth == 0:
             return (self.eval(W, B), None)
-        
         movemap = move_gen(W, B)
         best = alpha
         
@@ -133,9 +117,6 @@ class StudentEngine(Engine):
     P_SUB_CORNER = 0x42C300000000C342
     
     def eval(self, W, B):
-        if (W, B) in self.TT:
-            return self.TT[W, B]
-        
         w0 = W & BIT[0] != 0
         w1 = W & BIT[7] != 0
         w2 = W & BIT[56] != 0
@@ -181,9 +162,7 @@ class StudentEngine(Engine):
         
         scoremob = 20 * wmob
         
-        score = scorepiece + scoreunstable + scoremob
-        self.TT[W, B] = score
-        return score
+        return scorepiece + scoreunstable + scoremob
         
     
     def minimax_old(self, board, color, depth):
