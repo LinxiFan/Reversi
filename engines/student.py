@@ -4,7 +4,7 @@ from copy import deepcopy
 from random import shuffle
 import heapq
 
-DEPTH = 4
+DEPTH = 5
 
 class StudentEngine(Engine):
     """ Game engine that implements a simple fitness function maximizing the
@@ -16,11 +16,17 @@ class StudentEngine(Engine):
         fill_radial_map()
         # transposition table
         self.TT = {}
+        self.TTCounter = {}
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
         """ Return a move for the given color that maximizes the difference in 
         number of pieces for that color. """
+        
+        print move_num
+        print "Transposition size", len(self.TT)
+        if len(self.TT) != 0:
+            print "max repetition", heapq.nlargest(10, self.TTCounter.values())
         
         W, B = to_bitboard(board)
         
@@ -74,8 +80,15 @@ class StudentEngine(Engine):
         return (best, bestmv)
     
     def alphabeta(self, W, B, depth, alpha, beta):
+        if (W, B) in self.TTCounter:
+            self.TTCounter[W, B] += 1
+        else:
+            self.TTCounter[W, B] = 1
+
+            
         if depth == 0:
             return (self.eval(W, B), None)
+        
         movemap = move_gen(W, B)
         best = alpha
         
