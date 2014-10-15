@@ -84,7 +84,7 @@ class StudentEngine(Engine):
         if len(mvlist) == 0:
             return (best, None)
         else:
-#             shuffle(mvlist)
+            shuffle(mvlist)
             bestmv = mvlist[0]
             
         for mv in mvlist:
