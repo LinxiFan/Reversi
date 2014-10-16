@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 from random import shuffle
-import numpy
 
 class StudentEngine(Engine):
     def __init__(self):
@@ -112,7 +111,6 @@ class StudentEngine(Engine):
             mv, movemap = pop_lsb(movemap)
             mvlist.append(mv)
         
-        self.children += len(mvlist)
         if len(mvlist) == 0:
             # we don't have any legal moves. Let's see if opponent has any
             if move_gen(B, W) != 0:
@@ -138,6 +136,7 @@ class StudentEngine(Engine):
             tmpW ^= flipmask | BIT[mv]
             tmpB ^= flipmask
 
+            self.children += 1
             score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
             
             # principal variation search
