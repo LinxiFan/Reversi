@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from engines import Engine
 from copy import deepcopy
 from random import shuffle
+import numpy
 
 class StudentEngine(Engine):
     def __init__(self):
@@ -13,33 +14,15 @@ class StudentEngine(Engine):
         self.depth = 0
         # timing history
         self.last_time_remaining = 0
+        self.nodes = 0
+        self.duplicate = {}
+        self.parent = 0
+        self.children = 0
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
-        # simple opening book
-        if move_num == 0:
-            if color < 0:
-                return (2, 4)
-            else:
-                if board[2][4] == -1 or board[3][5] == -1:
-                    return (2, 5)
-                elif board[4][2] == -1 or board[5][3] == -1:
-                    return (5, 2)
-                
         # timing
-        self.depth = 5
-        if move_num > 5 and time_remaining > 6:
-            self.depth = 6
-        if self.last_time_remaining > 1.6 * time_remaining:
-            self.depth = 5
-        if time_remaining < 2:
-            self.depth = 4
-        if time_remaining < 0.5:
-            self.depth = 3
-        if time_remaining < 0.2:
-            self.depth = 1
-#         print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining, "last", self.last_time_remaining
-        self.last_time_remaining = time_remaining
+        self.depth = 3
 
         W, B = to_bitboard(board)
         
@@ -48,7 +31,17 @@ class StudentEngine(Engine):
         if self.alpha_beta:
             res = self.alphabeta(wb[0], wb[1], self.depth, -float("inf"), float("inf"))
         else:
-            res = self.minimax(wb[0], wb[1], 3)
+            res = self.minimax(wb[0], wb[1], self.depth)
+            
+        if move_num > 20:
+            print "All Nodes", self.nodes
+            dup = 0
+            for _, val in self.duplicate.items():
+                if val:
+                    dup += 1
+            print "Duplicate", dup
+            print "Parent", self.parent, "Children", self.children, "Branching", self.children * 1.0 / self.parent
+        
         return to_move(res[1])
 
         # debugging
@@ -61,9 +54,18 @@ class StudentEngine(Engine):
 #             return self.minimax(board, color, DEPTH)[1]
     
     def minimax(self, W, B, depth):
+        self.nodes += 1
+        if (W, B) in self.duplicate:
+            self.duplicate[W, B] = True
+        else:
+            self.duplicate[W, B] = False
+
         if depth == 0:
             return (self.eval(W, B), None)
+
+        self.parent += 1
         movemap = move_gen(W, B)
+        self.children += count_bit(movemap)
         best = - float("inf")
         bestmv = None
         if movemap != 0:
@@ -93,6 +95,15 @@ class StudentEngine(Engine):
         return (best, bestmv)
     
     def alphabeta(self, W, B, depth, alpha, beta):
+        self.nodes += 1
+        if (W, B) in self.duplicate:
+            self.duplicate[W, B] = True
+        else:
+            self.duplicate[W, B] = False
+        if depth == 0:
+            return (self.eval(W, B), None)
+        
+        self.parent += 1
         movemap = move_gen(W, B)
         best = alpha
         
@@ -101,13 +112,11 @@ class StudentEngine(Engine):
             mv, movemap = pop_lsb(movemap)
             mvlist.append(mv)
         
+        self.children += len(mvlist)
         if len(mvlist) == 0:
             # we don't have any legal moves. Let's see if opponent has any
             if move_gen(B, W) != 0:
-                if depth == 1:
-                    return (- self.eval(B, W), None)
-                else:
-                    return  (-self.alphabeta(B, W, depth - 1, -beta, -best)[0], None)
+                return  (-self.alphabeta(B, W, depth - 1, -beta, -best)[0], None)
             else:
                 # no one has legal move. Game ends
                 wscore = count_bit(W)
@@ -129,10 +138,7 @@ class StudentEngine(Engine):
             tmpW ^= flipmask | BIT[mv]
             tmpB ^= flipmask
 
-            if depth == 1:
-                score = - self.eval(tmpB, tmpW)
-            else: # save a recursive call
-                score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
+            score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
             
             # principal variation search
 #             res = self.alphabeta(tmpB, tmpW, depth-1, -(best+1), -best)
