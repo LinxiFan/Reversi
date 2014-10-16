@@ -133,10 +133,19 @@ class StudentEngine(Engine):
                 score = - self.eval(tmpB, tmpW)
             else: # save a recursive call
                 score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
-
+            
+            # principal variation search
+#             res = self.alphabeta(tmpB, tmpW, depth-1, -(best+1), -best)
+#             score = -res[0]
+#             if score > best and score < beta:
+#                 score = - self.alphabeta(tmpB, tmpW, depth - 1, -beta, -best)[0]
+#             else:
+#                 return (score, res[1])
+                    
             if score > best:
                 best = score
                 bestmv = mv
+                
             if best >= beta:
                 return (best, bestmv)
             
