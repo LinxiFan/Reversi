@@ -3,7 +3,7 @@ from engines import Engine
 from copy import deepcopy
 from random import shuffle
 
-# Version 11.03
+# Version 11.15
 class StudentEngine(Engine):
     def __init__(self):
         # initialize a few pre-calculated tables
@@ -38,7 +38,7 @@ class StudentEngine(Engine):
         last_time = self.last_time_remaining - time_remaining
         
         if move_num > 5 and time_remaining > 10:
-            if alloc_time >= 1:
+            if alloc_time >= 0.6 and move_num < 12 or alloc_time > 0.8 and move_num < 18 or alloc_time > 1.5:
                 self.depth = 6
             else:
                 self.depth = 5
@@ -49,7 +49,7 @@ class StudentEngine(Engine):
                 self.depth = 5
 
         if last_time > 2 * alloc_time:
-            self.depth -= 1
+            self.depth = 5
         
         if time_remaining < 3:
             self.depth = 4
