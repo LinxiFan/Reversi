@@ -1,7 +1,7 @@
 Linxi Fan
-lf2422
 
-Part II   Comparison
+Comparison report
+
 The codes for statistics collection are injected in the search algorithms,
 but they have been commented out for speed.
 The numbers below are rounded to the nearest hundred/thousand. Both the

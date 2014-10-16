@@ -1,8 +1,7 @@
 Linxi Fan
-lf2422
-AI HW 2  Othello engine
+Othello (Reversi) Engine
 
-Part I  Implementation of search
+Implementation details
 
 [1] Minimax
 Let A denote my engine's color, and B the opponent.
@@ -74,9 +73,8 @@ versions of my engine.
 For example, the current search depth may depend on the time spent on the
 previous get_move(). 
 
-Under 60s constraint, my engine can typically search up to a depth of 6 plies.
-
-Thanks for reviewing my work!
+Under 60s constraint, my engine can typically search up to a depth of 6
+plies on clic machines.
 
 
 ===== References =====
