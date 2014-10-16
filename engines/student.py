@@ -11,6 +11,8 @@ class StudentEngine(Engine):
         fill_lsb_table()
         fill_radial_map()
         self.depth = 0
+        # timing history
+        self.last_time_remaining = 0
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -26,15 +28,19 @@ class StudentEngine(Engine):
                 
         # timing
         self.depth = 5
-        if move_num > 5 and time_remaining > 8:
+        if move_num > 5 and time_remaining > 6:
             self.depth = 6
+        if self.last_time_remaining > 1.6 * time_remaining:
+            self.depth = 5
         if time_remaining < 2:
             self.depth = 4
         if time_remaining < 0.5:
             self.depth = 3
         if time_remaining < 0.2:
             self.depth = 1
-        print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining
+#         print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining, "last", self.last_time_remaining
+        self.last_time_remaining = time_remaining
+
         W, B = to_bitboard(board)
         
         wb = (W, B) if color > 0 else (B, W)
