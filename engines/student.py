@@ -31,12 +31,15 @@ class StudentEngine(Engine):
         if move_num > 5 and time_remaining > 6:
             self.depth = 6
         if self.last_time_remaining > 1.6 * time_remaining:
-            self.depth = 5
-        if time_remaining < 2:
+            if time_remaining < 7:
+                self.depth = 4
+            else:
+                self.depth = 5
+        if time_remaining < 3:
             self.depth = 4
-        if time_remaining < 0.5:
+        if time_remaining < 0.8:
             self.depth = 3
-        if time_remaining < 0.2:
+        if time_remaining < 0.4:
             self.depth = 1
 #         print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining, "last", self.last_time_remaining
         self.last_time_remaining = time_remaining
