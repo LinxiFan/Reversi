@@ -4,7 +4,7 @@ from copy import deepcopy
 from random import shuffle
 
 # Version 11.25
-class StudentEngine(Engine):
+class EonaEngine(Engine):
     def __init__(self):
         # initialize a few pre-calculated tables
         self.alpha_beta = False
@@ -525,4 +525,4 @@ def pos2hex(*plist):
     s = hex(n).upper()
     return "0x" + s[2:]
 
-engine = StudentEngine
+engine = EonaEngine
