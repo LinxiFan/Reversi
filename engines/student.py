@@ -10,7 +10,7 @@ class StudentEngine(Engine):
         fill_bit_table()
         fill_lsb_table()
         fill_radial_map()
-        self.depth = 0
+        self.depth = 5
         # timing history
         self.last_time_remaining = 0
         
@@ -32,21 +32,30 @@ class StudentEngine(Engine):
                     return (5, 2)
                 
         # timing
-        self.depth = 5
-        if move_num > 5 and time_remaining > 6:
+        mvs_remain = 32.0 - move_num
+        alloc_time = time_remaining / mvs_remain
+        last_time = self.last_time_remaining - time_remaining
+        
+        if move_num > 5 and time_remaining > 10 and alloc_time >= 1:
             self.depth = 6
-        if self.last_time_remaining > 1.6 * time_remaining:
+        if last_time > 0.6 * time_remaining:
             if time_remaining < 7:
                 self.depth = 4
             else:
                 self.depth = 5
+
+        if last_time > 2 * alloc_time:
+            self.depth -= 1
+        
         if time_remaining < 3:
             self.depth = 4
         if time_remaining < 0.8:
             self.depth = 3
-        if time_remaining < 0.4:
+        if time_remaining < 0.5:
+            self.depth = 2
+        if time_remaining < 0.3:
             self.depth = 1
-#         print "self.depth", self.depth, "at round", move_num, "time remain", time_remaining, "last", self.last_time_remaining
+#         print "alloc", alloc_time, "last", last_time, "self.depth", self.depth, "at round", move_num, "time remain", time_remaining
         self.last_time_remaining = time_remaining
 
         W, B = to_bitboard(board)
