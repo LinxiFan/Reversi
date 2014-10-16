@@ -13,6 +13,11 @@ class StudentEngine(Engine):
         self.depth = 0
         # timing history
         self.last_time_remaining = 0
+        
+#         self.nodes = 0
+#         self.duplicate = {}
+#         self.parent = 0
+#         self.children = 0
 
     def get_move(self, board, color, move_num=None,
                  time_remaining=None, time_opponent=None):
@@ -64,9 +69,19 @@ class StudentEngine(Engine):
 #             return self.minimax(board, color, DEPTH)[1]
     
     def minimax(self, W, B, depth):
+#         self.nodes += 1
+#         if (W, B) in self.duplicate:
+#             self.duplicate[W, B] = True
+#         else:
+#             self.duplicate[W, B] = False
+            
         if depth == 0:
             return (self.eval(W, B), None)
+        
         movemap = move_gen(W, B)
+#         self.parent += 1
+#         self.children += count_bit(movemap)
+
         best = - float("inf")
         bestmv = None
         if movemap != 0:
