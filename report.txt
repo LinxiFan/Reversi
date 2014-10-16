@@ -1,0 +1,73 @@
+Linxi Fan
+lf2422
+
+Part II   Comparison
+The codes for statistics collection are injected in the search algorithms,
+but they have been commented out for speed.
+The numbers below are rounded to the nearest hundred/thousand. Both the
+minimax and the alpha-beta engines are run against random to get the
+statistics. 
+
+[1] Number of nodes generated
+I keep a field 'self.nodes' as a counter that counts every leaf node and
+internal node of the game tree. 
+Here's a table of results for all nodes generated in one complete game:
+
+Depth     Minimax         Alpha-beta
+1         250 - 300       250 - 300
+2         2500 - 2900     1200 - 1400
+3         17000 - 22000   5000 - 7000
+4         1.8e5 - 3e5     27000 - 35000
+
+This result empirically shows the fact that both minimax and alpha-beta are
+exponential algorithms in terms of depth, though alpha-beta's complexity
+increases more slowly than minimax.
+
+[2] Number of nodes duplicated
+I use a python dictionary as a hashtable to count the duplicates. Thanks to
+bitboard representation again, the board state is very easy to hash.
+The number of duplicates varies widely from game to game, so I pick one
+example for each depth and list it below.
+
+Depth     Minimax         Alpha-beta
+1         0               0
+2         37              25
+3         1512            322
+4         44029           1787
+
+The number of duplicates seems to grow exponentially as well, for both
+minimax and alpha-beta. In addition, alpha-beta's duplicate states grow more
+slowly than minimax, which seems reasonable because alpha-beta generates
+fewer nodes in the first place.
+
+[3] Average branching factor
+I keep two fields 'self.parent' and 'self.children' to count the parent-child
+relations throughout the tree. 
+In alpha-beta mode, I do not count the nodes that are pruned (generated but 
+not explored).
+Branching factor = self.parent / self.children
+
+Depth     Minimax         Alpha-beta
+1         8.4 - 9.3       7.5 - 9.0
+2         7.8 - 9.2       3.6 - 4.5
+3         7.7 - 9.3       4.6 - 5.6
+
+It is expected that alpha-beta search has a smaller branching factor than
+minimax, starting from depth 2. A better move ordering might yield an even
+lower branching factor. 
+
+[4] Runtime
+Tested on clic. '0' entry means the code runs almost instantly. 
+Measured in seconds. The table displays the average time for one get_move()
+
+Depth     Minimax         Alpha-beta
+1         0               0
+2         0               0
+3         0.09            0 
+4         0.38            0.07
+5         2.1             0.42
+6         15.4            1.65
+
+The run time also follows the pattern of generated nodes. The time grows
+exponentially with depth, and minimax is almost an order of magnitude slower
+than alpha-beta, which is expected. 
